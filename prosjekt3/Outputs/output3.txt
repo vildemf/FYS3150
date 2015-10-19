@@ -1,0 +1,1 @@
+N= 35 Integral Legendre: 0.189923 Relative error: 0.0147463 Time: 566

@@ -1,0 +1,2 @@
+N= 30 Integral brute force MC: 0.00187663 Standard deviation: 0.00137569 Relative error: 0.990265 Time: 0
+N= 30 Integral improved MC: 0.0613218 Standard deviation: 0.019402 Relative error: 0.681884 Time: 0

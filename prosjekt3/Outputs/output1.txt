@@ -1,0 +1,4 @@
+N= 20 Integral Legendre: 0.156139 Relative error: 0.190004 Time: 20
+N= 20 Integral Legendre and Laguerre: 0.191082 Relative error: 0.00873564 Time: 68
+N= 100000000 Integral brute force MC: 0.192492 Standard deviation: 0.00310379 Time: 62
+N= 100000000 Integral brute force MC: 0.192698 Standard deviation: 0.000103854 Time: 164

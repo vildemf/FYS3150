@@ -1,0 +1,2 @@
+N= 20 Integral brute force MC: 0.00102181 Standard deviation: 0.000659735 Relative error: 0.994699 Time: 0
+N= 20 Integral improved MC: 0.059607 Standard deviation: 0.0264151 Relative error: 0.69078 Time: 0

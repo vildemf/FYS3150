@@ -1,0 +1,2 @@
+N= 100000000 Integral brute force MC: 0.19747 Standard deviation: 0.00418516 Relative error: 0.0244062 Time: 54
+N= 100000000 Integral improved MC: 0.193003 Standard deviation: 0.000102903 Relative error: 0.00123274 Time: 152

@@ -1,0 +1,2 @@
+N= 30 Integral Legendre: 0.177283 Relative error: 0.080319 Time: 202
+N= 30 Integral Legendre and Laguerre: 0.192114 Relative error: 0.00338235 Time: 682

@@ -1,0 +1,2 @@
+N= 35 Integral brute force MC: 0.00440713 Standard deviation: 0.00404953 Relative error: 0.977137 Time: 0
+N= 35 Integral improved MC: 0.319369 Standard deviation: 0.16166 Relative error: 0.656771 Time: 0
