@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <armadillo>
 #include "functions.h"
 #include <time.h>
@@ -7,62 +8,53 @@ using namespace std;
 using namespace arma;
 
 void initialize(int, double, mat&, double&, double&);
+void output(int, int, double, vec&, double, ofstream&);
+
 
 int main()
 {
-    // before T
-    long idum = -1;
-    int L = 2;
-    int number_mcs = 1000000;
-    mat s_mat(L,L);
-    //int cc = 0;
-    // for each T
-    double temp = 1.0;
-    double E = 0;
-    double M = 0;
-    vec w = zeros<vec>(17); // 17 is convenient in order to relate deltaE to indices
-    for( int de =-8; de <= 8; de+=4) {
-        w[de+8] = exp(-de/temp);
-     }
-    vec average = zeros<vec>(5); // 5 is number of relevant expectation values
-    initialize(L, temp, s_mat, E, M);
-    for (int cycles = 1; cycles <= number_mcs; cycles++){
-        metropolis(L, idum, s_mat, E, M, w);        
-        //if (abs(E+8)>1e-3) {
-        //    cout << E << " " << ++cc << endl;
-        //}
-        // update expectation values
-        average(0) += E; average(1) += E*E;
-        average(2) += M; average(3) += M*M; average(4) += fabs(M);
-    }
-    // take MC average
-    average *= 1.0/((double) number_mcs);
-    double Eaverage = average(0);
-    double E2average = average(1);
-    double Maverage = average(2);
-    double M2average = average(3);
-    double Mabsaverage = average(4);
-
-    // find variances and compute values
-    double Evariance = E2average - Eaverage*Eaverage;
-    double Mvariance = M2average - Maverage*Maverage;
-    double Mabsvariance = M2average - Mabsaverage*Mabsaverage;
-    double Cv = Evariance/(temp*temp);
-    double X = Mvariance/(temp);
-    double X_abs = Mabsvariance/temp;
+    // Set up
+    ofstream outfile;
+    outfile.open ("/home/vilde/Documents/FYS3150/project4/testL20temp1MC10_6.txt");
+    time_t start, finish;     // to measure computing time
+    long idum = -1;           // seed for the random numbers
+    int L = 2;                // number of spins in one direction
+    mat s_mat(L,L);           // spin matrix - one element is one spin
 
 
-    // To take values pr number of spins
-    double N = (double) L*L;
+    // Set up MC cycles
+    int start_mcs = 100000;
+    int end_mcs = 1000000;
+    int factor_mcs = 10;
 
-    //cout << "<M2> = " << M2average << endl;
-    //cout << "<E2> = " << E2average << endl;
-    cout << "<E> = " << Eaverage/N << endl;
-    cout << "|<M>| = " << fabs(Maverage)/N << endl;
-    cout << "<|M|> = " << Mabsaverage/N << endl;
-    cout << "Cv = " << Cv/N << endl;
-    cout << "X = " << X/N << endl;
-    cout << "X_abs = " << X_abs/N << endl;
+    // Set up temperatures
+    double start_temp = 1;
+    double end_temp = 2;
+    double step_temp = 1;
+
+    for (int number_mcs = start_mcs; number_mcs<=end_mcs; number_mcs*=factor_mcs) {
+        // for each T
+        for (double temp = start_temp; temp <= end_temp; temp+=step_temp) {
+            time(&start);
+            double E = 0;
+            double M = 0;
+            vec w = zeros<vec>(17); // 17, to relate deltaE to indices (move out of loop?)
+            for( int de =-8; de <= 8; de+=4) {
+                w[de+8] = exp(-de/temp);
+            }
+            vec average = zeros<vec>(5); // 5 is number of relevant expectation values
+            initialize(L, temp, s_mat, E, M);
+            for (int cycles = 1; cycles <= number_mcs; cycles++){
+                metropolis(L, idum, s_mat, E, M, w);
+                // update expectation values
+                average(0) += E; average(1) += E*E;
+                average(2) += M; average(3) += M*M; average(4) += fabs(M);
+            }
+            time(&finish);
+            output(L, number_mcs, temp, average, difftime(finish, start), outfile);
+        } // done with each T
+    } // done computing for the different numbers of MC cycles
+    outfile.close();
 
     return 0;
 }
@@ -89,6 +81,45 @@ void initialize(int L, double temp, mat &s_mat, double &E, double &M) {
 }// end function initialise
 
 
-//void output(int L, int number_mcs, double temp, vec &average) {
-//
-//}
+void output(int L, int number_mcs, double temp, vec &average, double time, ofstream &outfile) {
+    // Take MC average
+    average *= 1.0/((double) number_mcs);
+    double Eaverage = average(0);
+    double E2average = average(1);
+    double Maverage = average(2);
+    double M2average = average(3);
+    double Mabsaverage = average(4);
+
+    // Find variances and compute values
+    double Evariance = E2average - Eaverage*Eaverage;
+    double Mvariance = M2average - Maverage*Maverage;
+    double Mabsvariance = M2average - Mabsaverage*Mabsaverage;
+    double Cv = Evariance/(temp*temp);
+    double X = Mvariance/(temp);
+    double X_abs = Mabsvariance/temp;
+
+
+    // To take values pr number of spins
+    double N = (double) L*L;
+
+    outfile << L << "  ";
+    outfile << number_mcs << "  ";
+    outfile << setprecision(5) << time << "  "; // time since previous output in seconds
+    outfile << setprecision(8) << temp << "  ";
+    outfile << setprecision(8) << Eaverage/N << "  ";
+    outfile << setprecision(8) << fabs(Maverage)/N << "  ";
+    outfile << setprecision(8) << Mabsaverage/N << "  ";
+    outfile << setprecision(8) << Cv/N << "  ";
+    outfile << setprecision(8) << X/N << "  ";
+    outfile << setprecision(8) << X_abs/N << endl;
+
+    /*
+    cout << "<E> = " << Eaverage/N << endl;
+    cout << "|<M>| = " << fabs(Maverage)/N << endl;
+    cout << "<|M|> = " << Mabsaverage/N << endl;
+    cout << "Cv = " << Cv/N << endl;
+    cout << "X = " << X/N << endl;
+    cout << "X_abs = " << X_abs/N << endl;
+    */
+}
+
