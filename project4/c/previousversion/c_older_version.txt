@@ -1,0 +1,39 @@
+
+    // Set up MC cycles
+    //int start_mcs = 100;
+    //int end_mcs = 10000000;
+    //int factor_mcs = 10;
+    int number_mcs = 10000000;
+
+    // Set up temperatures
+    double start_temp = 1;
+    double end_temp = 2;
+    double step_temp = 2;
+
+    //for (int number_mcs = start_mcs; number_mcs<=end_mcs; number_mcs*=factor_mcs) {
+
+    // for each T
+    for (double temp = start_temp; temp <= end_temp; temp+=step_temp) {
+        double E = 0;
+        double M = 0;
+        vec w = zeros<vec>(17); // 17, to relate deltaE to indices (move out of loop?)
+        for( int de =-8; de <= 8; de+=4) {
+            w[de+8] = exp(-de/temp);
+        }
+        vec average = zeros<vec>(5); // 5 is number of relevant expectation values
+        initialize(L, temp, s_mat, E, M);
+
+        time(&start);
+        for (int cycles = 1; cycles <= number_mcs; cycles++){
+            metropolis(L, idum, s_mat, E, M, w);
+            // update expectation values
+            average(0) += E; average(1) += E*E;
+            average(2) += M; average(3) += M*M; average(4) += fabs(M);
+            time(&finish);
+            if (cycles==1E3 || cycles==1E4 || cycles==1E5 || cycles==1E6 || cycles==1E7 ) {
+                output(L, cycles, temp, average, difftime(finish, start), outfile);
+            }
+        }
+    } // done with each T
+    //} // done computing for the different numbers of MC cycles
+    outfile.close();

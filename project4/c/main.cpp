@@ -9,7 +9,7 @@ using namespace std;
 using namespace arma;
 
 void initialize(int, double, mat&, double&, double&);
-void output(int, int, double, vec&, double, ofstream&, int);
+void output(int, int, double, vec&, double, ofstream&);
 void rand_initialize(int, double, mat&, double&, double&, long&);
 
 
@@ -32,8 +32,8 @@ int main()
 
     // Set up temperatures
     double start_temp = 1;
-    double end_temp = 3;
-    double step_temp = 1;
+    double end_temp = 2;
+    double step_temp = 3;
 
     // for each T
     for (double temp = start_temp; temp <= end_temp; temp+=step_temp) {
@@ -44,67 +44,67 @@ int main()
             w[de+8] = exp(-de/temp);
         }
         vec average = zeros<vec>(5); // 5 is number of relevant expectation values
-        initialize(L, temp, s_mat, E, M);
+        //initialize(L, temp, s_mat, E, M);
+        rand_initialize(L, temp, s_mat, E, M, idum);
 
 
         int cycles = 0;
-        int a_count = 0;
         time(&start);
 
         for (cycles = cycles; cycles < 1E1; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
+            metropolis(L, idum, s_mat, E, M, w);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, cycles, temp, average, difftime(finish, start), outfile);
 
         for (cycles = cycles; cycles < 1E2; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
+            metropolis(L, idum, s_mat, E, M, w);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, cycles, temp, average, difftime(finish, start), outfile);
 
 
         for (cycles = cycles; cycles < 1E3; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
+            metropolis(L, idum, s_mat, E, M, w);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, cycles, temp, average, difftime(finish, start), outfile);
 
         for (cycles = cycles; cycles < 1E4; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
+            metropolis(L, idum, s_mat, E, M, w);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, cycles, temp, average, difftime(finish, start), outfile);
 
         for (cycles = cycles; cycles < 1E5; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
+            metropolis(L, idum, s_mat, E, M, w);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, cycles, temp, average, difftime(finish, start), outfile);
 
         for (cycles = cycles; cycles < 1E6; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
+            metropolis(L, idum, s_mat, E, M, w);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, cycles, temp, average, difftime(finish, start), outfile);
 
     } // done with each T
 
@@ -118,7 +118,7 @@ void initialize(int L, double temp, mat &s_mat, double &E, double &M) {
     // setup spin matrix and intial magnetization
     for(int x =0; x <L; x++) {
         for (int y= 0; y <L; y++){
-            if (temp < 1.5) {
+            if (temp < 4) {
                 s_mat(x, y) = 1; // spin orientation for the ground state
             }
             M += (double) s_mat(x,y);
@@ -159,7 +159,7 @@ void rand_initialize(int L, double temp, mat &s_mat, double &E, double &M, long 
 
 
 
-void output(int L, int number_mcs, double temp, vec &average, double time, ofstream &outfile, int a_count) {
+void output(int L, int number_mcs, double temp, vec &average, double time, ofstream &outfile) {
     // Take MC average
     double Eaverage = average(0)/( (double)number_mcs);
     double E2average = average(1)/( (double)number_mcs);
@@ -188,8 +188,7 @@ void output(int L, int number_mcs, double temp, vec &average, double time, ofstr
     outfile << setprecision(8) << Mabsaverage/N << "  ";
     outfile << setprecision(8) << Cv/N << "  ";
     outfile << setprecision(8) << X/N << "  ";
-    outfile << setprecision(8) << X_abs/N << "   ";
-    outfile << a_count << endl;
+    outfile << setprecision(8) << X_abs/N << endl;
 
     /*
     cout << "<E> = " << Eaverage/N << endl;

@@ -15,6 +15,28 @@ using namespace arma;
  * New configurations accepted or rejected,
  * if accepted, measurements updated
  */
+void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w, int &a_count) {
+    for (int s=0; s<L*L; s++) {
+        // Pick random spin for proposed flip
+        int x = (int) ( ran1(&idum) * (double)L );
+        int y = (int) ( ran1(&idum) * (double)L );
+        // Calculate energy change
+        int deltaE = 2*s_mat(x,y)*                 // current spin
+                (s_mat(x, periodic(y, L, 1)) +     // above spin
+                 s_mat(x, periodic(y, L, -1)) +    // below spin
+                 s_mat(periodic(x, L, 1), y) +     // to the right spin
+                 s_mat(periodic(x, L, -1), y));    // to the left spin
+
+        if ( ran1(&idum) <= w[deltaE + 8] ) {      // if flip accepted-> new configuration
+            s_mat(x,y) *= -1;                      // update spin (flip)
+            M += (double) 2*s_mat(x,y);              // update M w/ delta M
+            E += (double) deltaE;                  // update E w/ delta E
+            a_count++;
+        }
+    }
+}
+
+/*
 void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w) {
     for (int s=0; s<L*L; s++) {
         // Pick random spin for proposed flip
@@ -34,6 +56,7 @@ void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w) {
         }
     }
 }
+*/
 
 /* Ensures periodic behaviour when reaching end points
  * of the spin matrix

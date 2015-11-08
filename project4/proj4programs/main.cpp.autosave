@@ -10,8 +10,6 @@ using namespace arma;
 
 void initialize(int, double, mat&, double&, double&);
 void output(int, int, double, vec&, double, ofstream&, int);
-void rand_initialize(int, double, mat&, double&, double&, long&);
-
 
 int main()
 {
@@ -23,12 +21,7 @@ int main()
     long idum = -1;           // seed for the random numbers
     int L = 20;               // number of spins in one direction
     mat s_mat(L,L);           // spin matrix - one element is one spin
-
-
-    // Set up MC cycles
-    //int start_mcs = 100000;
-    //int end_mcs = 1000000;
-    //int factor_mcs = 10;
+    int number_mcs = 1E6;
 
     // Set up temperatures
     double start_temp = 1;
@@ -47,64 +40,17 @@ int main()
         initialize(L, temp, s_mat, E, M);
 
 
-        int cycles = 0;
         int a_count = 0;
         time(&start);
 
-        for (cycles = cycles; cycles < 1E1; cycles++){
+        for (int cycles = o; cycles < number_mcs; cycles++){
             metropolis(L, idum, s_mat, E, M, w, a_count);
             // update expectation values
             average(0) += E; average(1) += E*E;
             average(2) += M; average(3) += M*M; average(4) += fabs(M);
         }
         time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
-
-        for (cycles = cycles; cycles < 1E2; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
-            // update expectation values
-            average(0) += E; average(1) += E*E;
-            average(2) += M; average(3) += M*M; average(4) += fabs(M);
-        }
-        time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
-
-
-        for (cycles = cycles; cycles < 1E3; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
-            // update expectation values
-            average(0) += E; average(1) += E*E;
-            average(2) += M; average(3) += M*M; average(4) += fabs(M);
-        }
-        time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
-
-        for (cycles = cycles; cycles < 1E4; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
-            // update expectation values
-            average(0) += E; average(1) += E*E;
-            average(2) += M; average(3) += M*M; average(4) += fabs(M);
-        }
-        time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
-
-        for (cycles = cycles; cycles < 1E5; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
-            // update expectation values
-            average(0) += E; average(1) += E*E;
-            average(2) += M; average(3) += M*M; average(4) += fabs(M);
-        }
-        time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
-
-        for (cycles = cycles; cycles < 1E6; cycles++){
-            metropolis(L, idum, s_mat, E, M, w, a_count);
-            // update expectation values
-            average(0) += E; average(1) += E*E;
-            average(2) += M; average(3) += M*M; average(4) += fabs(M);
-        }
-        time(&finish);
-        output(L, cycles, temp, average, difftime(finish, start), outfile, a_count);
+        output(L, number_mcs, temp, average, difftime(finish, start), outfile, a_count);
 
     } // done with each T
 
@@ -133,30 +79,6 @@ void initialize(int L, double temp, mat &s_mat, double &E, double &M) {
         }
     }
 }// end function initialise
-
-void rand_initialize(int L, double temp, mat &s_mat, double &E, double &M, long &idum) {
-    // setup spin matrix and intial magnetization
-    for(int x =0; x <L; x++) {
-        for (int y= 0; y <L; y++) {
-            if (ran1(&idum) > 0.5) {
-                s_mat(x, y) = 1; // random spin orientation
-            } else {
-                s_mat(x, y) = -1;
-            }
-            M += (double) s_mat(x,y);
-        }
-    }
-    // setup initial energy
-    for(int x =0; x < L; x++) {
-        for (int y= 0; y < L; y++){
-            E -= (double) s_mat(x,y)*
-                    (s_mat(x,periodic(y,L,-1)) +
-                     s_mat(periodic(x,L,-1), y));
-        }
-    }
-}// end function initialise
-
-
 
 
 void output(int L, int number_mcs, double temp, vec &average, double time, ofstream &outfile, int a_count) {
