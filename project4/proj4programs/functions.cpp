@@ -15,7 +15,7 @@ using namespace arma;
  * New configurations accepted or rejected,
  * if accepted, measurements updated
  */
-void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w, int &a_count) {
+void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w, int &a_count, int my_rank) {
     for (int s=0; s<L*L; s++) {
         // Pick random spin for proposed flip
         int x = (int) ( ran1(&idum) * (double)L );
@@ -26,7 +26,7 @@ void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w, int
                  s_mat(x, periodic(y, L, -1)) +    // below spin
                  s_mat(periodic(x, L, 1), y) +     // to the right spin
                  s_mat(periodic(x, L, -1), y));    // to the left spin
-
+        //if(my_rank==1) cout << "Delta E: " << deltaE << endl;
         if ( ran1(&idum) <= w[deltaE + 8] ) {      // if flip accepted-> new configuration
             s_mat(x,y) *= -1;                      // update spin (flip)
             M += (double) 2*s_mat(x,y);              // update M w/ delta M
@@ -68,8 +68,8 @@ void metropolis(int L, long &idum, mat &s_mat, double &E, double &M, vec &w) {
  * Returns:
  * - the coordinate of the wanted neighbour spin
  */
-inline int periodic(int current, int L, int step) {
-    return (current+L+step) % (L);
-}
+//int periodic(int current, int L, int step) {
+//    return (current+L+step) % (L);
+//}
 
 
