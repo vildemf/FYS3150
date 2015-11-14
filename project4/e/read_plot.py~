@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-f = "results_0.txt"
+f = "e_L80dt03mcE6proc0.txt"
 data_file = open(f, 'r')
 
 L          = []
@@ -28,7 +28,7 @@ for line in data_file:
     chi.append(float(line[8]))
     chi_abs.append(float(line[9])) # includes \n. Python handles it
 
-f = "results_1.txt"
+f = "e_L80dt03mcE6proc1.txt"
 data_file = open(f, 'r')
 
 for line in data_file:
@@ -44,19 +44,20 @@ for line in data_file:
     chi.append(float(line[8]))
     chi_abs.append(float(line[9])) # includes \n. Python handles it
 
-"""
+
 plt.plot(temp, E_exp)
 plt.xlabel("$\\alpha$")
 plt.show()
 
 plt.plot(temp, M_abs_exp)
 plt.show()
-"""
+
 plt.figure(1)
 plt.subplot(211)
 plt.plot(temp, Cv)
 plt.xlabel("T")
 plt.ylabel("$C_v$")
+plt.title("L=60, number of cycles = 1E5")
 
 plt.subplot(212)
 plt.plot(temp, chi_abs)
