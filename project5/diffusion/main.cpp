@@ -18,8 +18,8 @@ int main()
 {
 
     ofstream outfile;
-    outfile.open("/home/vilde/Documents/FYS3150/project5/test.txt");
-    double T = 0.5; // t(Nt)
+    outfile.open("/home/vilde/Documents/FYS3150/project5/EFET0p3Nt5000Nx200.txt");
+    double T = 0.3; // t(Nt)
     double d = 1;  // x(Nx)
     int Nt = 50000;   // number of t-values
     int Nx = 200;   // number of x-values

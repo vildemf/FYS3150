@@ -1,14 +1,34 @@
 from numpy import *
 from matplotlib.pyplot import *
 
-infile = open("test.txt", 'r')
+"""
+0.001
+0.01
+0.1
+0.3
+"""
 
-parameters = infile.readline()
-u = []
+filenames = ["EFET0p3Nt5000Nx200.txt", "EFET0p1Nt5000Nx200.txt", "EFET0p01Nt5000Nx200.txt", "EFET0p001Nt5000Nx200.txt"]
+u = [[],[],[],[]]
+x = linspace(0, 1, 201)
+for i in range(len(u)):
+	infile = open(filenames[i], 'r')
+	infile.readline()
+	for line in infile:
+    		u[i].append(float(line))
+	u[i] = array(u[i])+1-x
 
-for line in infile:
-    u.append(float(line))
+for i in range(len(
+	plot(x,u[i])
 
-x = linspace(0, 1, 21)
-plot(x,u)
+legend(["T=0.3", "T=0.1", "T=0.01", "T=0.001"])
+override = {
+    'fontsize'            : 'large',
+    'verticalalignment'   : 'baseline',
+    'horizontalalignment' : 'center'
+    }
+xlabel("x", override)
+ylabel("u(x, t=T)", override)
+title("Explicit Forward Euler \n Nt=5000 Nx=200")
 show()
+

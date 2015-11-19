@@ -1,43 +1,34 @@
 from numpy import *
 from matplotlib.pyplot import *
 
-infile = open("T0p5Nt5000Nx200.txt", 'r')
+"""
+0.001
+0.01
+0.1
+0.3
+"""
 
-parameters = infile.readline()
-v_num = []
-
-for line in infile:
-    v_num.append(float(line))
-
+filenames = ["EFET0p3Nt5000Nx200.txt", "EFET0p1Nt5000Nx200.txt", "EFET0p01Nt5000Nx200.txt", "EFET0p001Nt5000Nx200.txt"]
+u = [[],[],[],[]]
 x = linspace(0, 1, 201)
+for i in range(len(u)):
+	infile = open(filenames[i], 'r')
+	infile.readline()
+	for line in infile:
+    		u[i].append(float(line))
+	u[i] = array(u[i])+1-x
 
-def v_an(x):
-    T=0.5
-    v = 0
-    for n in range(1,200):
-        v += (1./n)*sin(n*pi*x)*exp(-T*(n*pi)**2)
-    v *= -2/pi
-    return v
+for i in range(len(u)):
+	plot(x,u[i])
 
-
-u_num=array(v_num) + 1 - x
-u_an=array(v_an(x)) + 1 - x
-
-#plot(x,u_num, x, u_an)
-plot(x[:-1], 1E6*abs((u_an-u_num)[:-1]/u_an[:-1]))
-#legend(["Numerical", "Analytic"])
-
+legend(["T=0.3", "T=0.1", "T=0.01", "T=0.001"])
 override = {
     'fontsize'            : 'large',
     'verticalalignment'   : 'baseline',
     'horizontalalignment' : 'center'
     }
 xlabel("x", override)
-ylabel("Relative error $\\times$1E-6", override)
-title("Explicit Forward Euler Relative Error \n T=0.5 Nt=5000 Nx=200")
+ylabel("u(x, t=T)", override)
+title("Explicit Forward Euler \n Nt=5000 Nx=200")
 show()
-"""
-ylabel("v(x, t=5")
-title("Explicit Forward Euler \n Nx=20 Nt=5000")
-show()
-"""
+
