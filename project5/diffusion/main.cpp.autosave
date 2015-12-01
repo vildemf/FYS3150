@@ -17,40 +17,60 @@ void backward_euler(int, int, double, vec&, vec&, vec&);
 void forward_euler(int, int, double, vec&, vec&, vec&);
 double initial(double);
 
-int main()
+// ta inn (filnavn, T, d, Nt, Nx, forward=bool, backward=bool, crank=bool, pos_ikke_tid=bool)
+int main(int argc, char *argv[])
 {
-
+    // Declerations
     ofstream outfile;
-    outfile.open("/home/vilde/Documents/FYS3150/project5/test.txt");
-    double T = 0.3; // t(Nt)
-    double d = 1;  // x(Nx)
-    int Nt = 50000;   // number of t-values
-    int Nx = 200;   // number of x-values
-    vec t = linspace<vec>(0, T, Nt+1);
-    vec x = linspace<vec>(0, d, Nx+1);
-    double dt = t(1) - t(0);
-    double dx = x(1) - x(0);
+    //char filename = argv[1];
+    outfile.open(argv[1]);    
+    double T, d, D, dt, dx, alpha = 0;
+    int Nt, Nx= 0;
+    vec t, x, v_prev, v;
+    bool forward, backward, crank, store_x_not_t;
+    
+    // Initialize
+    set_up(T, d, D, dt, dx, alpha, Nt, Nx, t, x, v, v_prev, v, argv,
+           forward, backward, crank, store_x_not_t);
+    
+    if (forward)  forward_euler(Nt, Nx, alpha, v_prev, v, x);
+    if (backward) backward_euler(Nt, Nx, alpha, v_prev, v, x);
+    if (crank)    crank_nicolson(Nt, Nx, alpha, v_prev, v, x);
 
-    double D = 1;
-    double alpha = D*dt/(dx*dx);
-
-    vec v_prev = zeros<vec>(Nx+1); // store previous for computing for next t
-    vec v = zeros<vec>(Nx+1);
-
-    //forward_euler(Nt, Nx, alpha, v_prev, v, x);
-    //backward_euler(Nt, Nx, alpha, v_prev, v, x);
-    crank_nicolson(Nt, Nx, alpha, v_prev, v, x);
-
+    
+    
     outfile << Nt << " " << Nx << " " << dt << " " << dx << " " << T << endl;
     for (int i=0; i<=Nx; i++) {
         outfile << setprecision(8) << v(i) << endl;
     }
+    
     outfile.close();
-
-    cout << "Hello World!" << endl;
     return 0;
 }
 
+
+void set_up(&T, &d, &D, &dt, &dx, &alpha, &Nt, &Nx, &t, &x, &v, &v_prev, &v, &forward, &backward, &crank, &store_x_not_t) {
+    T = argv[2]; // t(Nt)
+    d = argv[3];  // x(Nx)
+    Nt = argv[4];   // number of t-values
+    Nx = argv[5];   // number of x-values
+    
+    forward = argv[6];
+    backward = argv[7];
+    crank = argv[8];
+    store_x_not_t = argv[9];
+    
+    t = linspace<vec>(0, T, Nt+1);
+    x = linspace<vec>(0, d, Nx+1);
+    dt = t(1) - t(0);
+    dx = x(1) - x(0);
+
+    double D = 1;
+    double alpha = D*dt/(dx*dx);
+    
+    vec v_prev = zeros<vec>(Nx+1); // store previous for computing for next t
+    vec v = zeros<vec>(Nx+1);
+}
 
 void crank_nicolson(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
     double b = 2+2*alpha; // diagonal
@@ -64,7 +84,7 @@ void crank_nicolson(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
     for (int i=1; i<Nx; i++) {
         v_prev(i) = initial(x(i));
     }
-    
+
     for (int j=1; j<=Nt; j++) {
         // Step 1: Solve V_prev_tilde = (2I-alphaB)V_prev (Forward Euler procedure)
         for (int i=1; i<Nx; i++) {
@@ -75,9 +95,9 @@ void crank_nicolson(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
         }
 
         // Step 2: Solve (2I+alphaB)V=V_prev_tilde
-        
+
         // Rember the matrix system excludes the known v(0,t), v(d,t)=0 i=0, i=Nx.
-        // Thus we initialize v(xd, dt) i=1, j=1, and work with i=2,...,Nx-1        
+        // Thus we initialize v(xd, dt) i=1, j=1, and work with i=2,...,Nx-1
         v_prev_rowoperated(1) = v_prev(1);
         b_rowoperated(1) = b;
         // Forward sub
@@ -146,27 +166,52 @@ void backward_euler(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
  *
  */
 void forward_euler(int Nt, int Nx, double alpha, vec& v_prev, vec& v, vec& x) {
+    //ofstream outfile;
+    //outfile.open("/home/vilde/Documents/FYS3150/project5/reler.txt");
     // t=0
     // v(0), v(Nx) = 0 or initial() at t=0?
     for (int i=1; i<Nx; i++) {
         v_prev(i) = initial(x(i));
     }
 
-
+    if (!store_x_not_t) outfile << 0 << " " << v_prev(100) << " " << x(100) << endl;
     // Calculate v(x, t) for t=dt,...,T and x=dx,..,d-dx
     // Corresponds to j=1,...,Nt and i=1,...,Nx-1
     // Leave out i=0 and i=Nx to keep v here 0 (boundary condition)
     for (int j=1; j<=Nt; j++) {
         for (int i=1; i<Nx; i++) {
             v(i) = alpha*v_prev(i-1) + (1-2*alpha)*v_prev(i) + alpha*v_prev(i+1);
-        }
+        }       
         for (int i=0; i<=Nx; i++) {
             v_prev(i) = v(i);
         }
+        if (!store_x_not_t) outfile << j << " " << v(100) << endl;
+
     }
+    if (!store_x_not_t) outfile.close();
 }
 
 
 double initial(double x) {
     return x-1;
 }
+
+
+/*
+ofstream outfile;
+outfile.open("/home/vilde/Documents/FYS3150/project5/crank.txt");
+double T = 0.5; // t(Nt)
+double d = 1;  // x(Nx)
+int Nt = 50000;   // number of t-values
+int Nx = 200;   // number of x-values
+vec t = linspace<vec>(0, T, Nt+1);
+vec x = linspace<vec>(0, d, Nx+1);
+double dt = t(1) - t(0);
+double dx = x(1) - x(0);
+
+double D = 1;
+double alpha = D*dt/(dx*dx);
+
+vec v_prev = zeros<vec>(Nx+1); // store previous for computing for next t
+vec v = zeros<vec>(Nx+1);
+*/

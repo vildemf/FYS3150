@@ -1,0 +1,11 @@
+from numpy import *
+from matplotlib.pyplot import *
+
+filename = open("testing.txt", "r")
+
+average = []
+for line in filename:
+    average.append(float(line[1]))
+
+hist(average)
+show()

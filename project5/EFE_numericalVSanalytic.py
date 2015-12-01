@@ -1,7 +1,7 @@
 from numpy import *
 from matplotlib.pyplot import *
 
-infile = open("test.txt", 'r')
+infile = open("crank.txt", 'r')
 parameters = infile.readline()
 v_num = []
 

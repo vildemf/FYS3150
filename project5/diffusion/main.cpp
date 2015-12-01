@@ -17,12 +17,16 @@ void backward_euler(int, int, double, vec&, vec&, vec&);
 void forward_euler(int, int, double, vec&, vec&, vec&);
 double initial(double);
 
-int main()
+int main(int argc, char *argv[])
 {
-
+    if (argc < 3) {
+        printf("LOL\n");
+        printf("%s", argv[1]);
+        exit(EXIT_SUCCESS);
+    }
     ofstream outfile;
-    outfile.open("/home/vilde/Documents/FYS3150/project5/test.txt");
-    double T = 0.3; // t(Nt)
+    outfile.open("/home/vilde/Documents/FYS3150/project5/crank.txt");
+    double T = 0.5; // t(Nt)
     double d = 1;  // x(Nx)
     int Nt = 50000;   // number of t-values
     int Nx = 200;   // number of x-values
@@ -37,7 +41,7 @@ int main()
     vec v_prev = zeros<vec>(Nx+1); // store previous for computing for next t
     vec v = zeros<vec>(Nx+1);
 
-    //forward_euler(Nt, Nx, alpha, v_prev, v, x);
+    forward_euler(Nt, Nx, alpha, v_prev, v, x);
     //backward_euler(Nt, Nx, alpha, v_prev, v, x);
     crank_nicolson(Nt, Nx, alpha, v_prev, v, x);
 
@@ -64,10 +68,9 @@ void crank_nicolson(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
     for (int i=1; i<Nx; i++) {
         v_prev(i) = initial(x(i));
     }
-    for (int j=1; j<=Nt; j++) {
-        // Rember the matrix system excludes the known v(0,t), v(d,t)=0 i=0, i=Nx.
-        // Thus we initialize v(xd, dt) i=1, j=1, and work with i=2,...,Nx-1
 
+    for (int j=1; j<=Nt; j++) {
+        // Step 1: Solve V_prev_tilde = (2I-alphaB)V_prev (Forward Euler procedure)
         for (int i=1; i<Nx; i++) {
             v(i) = alpha*v_prev(i-1) + (2-2*alpha)*v_prev(i) + alpha*v_prev(i+1);
         }
@@ -75,6 +78,10 @@ void crank_nicolson(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
             v_prev(i) = v(i);
         }
 
+        // Step 2: Solve (2I+alphaB)V=V_prev_tilde
+
+        // Rember the matrix system excludes the known v(0,t), v(d,t)=0 i=0, i=Nx.
+        // Thus we initialize v(xd, dt) i=1, j=1, and work with i=2,...,Nx-1
         v_prev_rowoperated(1) = v_prev(1);
         b_rowoperated(1) = b;
         // Forward sub
@@ -143,24 +150,29 @@ void backward_euler(int Nt, int Nx, double alpha, vec&v_prev, vec& v, vec& x) {
  *
  */
 void forward_euler(int Nt, int Nx, double alpha, vec& v_prev, vec& v, vec& x) {
+    //ofstream outfile;
+    //outfile.open("/home/vilde/Documents/FYS3150/project5/reler.txt");
     // t=0
     // v(0), v(Nx) = 0 or initial() at t=0?
     for (int i=1; i<Nx; i++) {
         v_prev(i) = initial(x(i));
     }
 
-
+    //outfile << 0 << " " << v_prev(100) << " " << x(100) << endl;
     // Calculate v(x, t) for t=dt,...,T and x=dx,..,d-dx
     // Corresponds to j=1,...,Nt and i=1,...,Nx-1
     // Leave out i=0 and i=Nx to keep v here 0 (boundary condition)
     for (int j=1; j<=Nt; j++) {
         for (int i=1; i<Nx; i++) {
             v(i) = alpha*v_prev(i-1) + (1-2*alpha)*v_prev(i) + alpha*v_prev(i+1);
-        }
+        }       
         for (int i=0; i<=Nx; i++) {
             v_prev(i) = v(i);
         }
+        //outfile << j << " " << v(100) << endl;
+
     }
+    //outfile.close();
 }
 
 
